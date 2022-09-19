@@ -1,0 +1,7 @@
+**/ignore_*
+**/build/
+**/sdkconfig
+**/sdkconfig.old
+**/.vscode
+**/__pycache__/
+
