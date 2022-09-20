@@ -92,14 +92,22 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *) param;
             
             switch (scan_result->scan_rst.search_evt) {
-                case ESP_GAP_SEARCH_INQ_RES_EVT:
+                case ESP_GAP_SEARCH_INQ_RES_EVT: {
+                    uint8_t mac[6] = {0xD8, 0x05, 0xA9, 0xC5, 0x7C, 0x4F};
+                    if (memcmp(mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
+                        break;
+                    }
+
                     LOGI_HEX(scan_result->scan_rst.bda, 6);
                     LOGI("Searched Adv Data Len %d, Scan Response Length %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
 
                     adv_name = esp_ble_resolve_adv_data(scan_result->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
                     LOGI("Searched Device Name Len %d", adv_name_len);
-                    LOGI_HEX(adv_name, adv_name_len);
-
+                    if (adv_name != NULL) {
+                        LOGI_HEX(adv_name, adv_name_len);
+                        LOGI("Name: %.*s", adv_name_len, adv_name);
+                    }
+                    
 #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
                     if (scan_result->scan_rst.adv_data_len > 0) {
                         LOGI("adv data:");
@@ -131,6 +139,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                         }               
                     }
                     break;
+                }
 
                 case ESP_GAP_SEARCH_INQ_CMPL_EVT:
                     break;

@@ -23,7 +23,7 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
 
 #define REMOTE_SERVICE_UUID     0x00FF
 
-static const char remote_device_name[] = "LY BluePuckMov remove\0";
+static const char remote_device_name[] = "LY BluePuckMov\0";
 static bool connect     = false;
 static bool get_server  = false;
 
