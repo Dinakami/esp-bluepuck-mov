@@ -85,7 +85,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 break;
             }
 
-            LOGI("BT scan start success");
+            LOGI("BT scan start success\n");
             break;
 
         case ESP_GAP_BLE_SCAN_RESULT_EVT: {
@@ -121,23 +121,23 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                     LOGI("\n");
 
                     // Connect to remote device if name
-                    if (adv_name != NULL) {
-                        if (strlen(remote_device_name) == adv_name_len &&
-                            strncmp((char *) adv_name, remote_device_name, adv_name_len) == 0) {
-                            LOGI("Searched device %s\n", remote_device_name);
+                    // if (adv_name != NULL) {
+                    //     if (strlen(remote_device_name) == adv_name_len &&
+                    //         strncmp((char *) adv_name, remote_device_name, adv_name_len) == 0) {
+                    //         LOGI("Searched device %s\n", remote_device_name);
 
-                            if (connect == false) {
-                                connect = true;
-                                LOGI("Connected to the remote device.");
+                    //         if (connect == false) {
+                    //             connect = true;
+                    //             LOGI("Connected to the remote device.");
 
-                                esp_ble_gap_stop_scanning();
-                                esp_ble_gattc_open(
-                                    gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].gattc_if, scan_result->scan_rst.bda,
-                                    scan_result->scan_rst.ble_addr_type, true
-                                );
-                            }
-                        }               
-                    }
+                    //             esp_ble_gap_stop_scanning();
+                    //             esp_ble_gattc_open(
+                    //                 gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].gattc_if, scan_result->scan_rst.bda,
+                    //                 scan_result->scan_rst.ble_addr_type, true
+                    //             );
+                    //         }
+                    //     }               
+                    // }
                     break;
                 }
 
@@ -150,13 +150,13 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             break;
         }
 
-        case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
-            if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-                LOGE("Scan stop failed, error status = %x", param->scan_stop_cmpl.status);
-                break;
-            }
-            LOGI("Stop scan Successful");
-            break;
+        // case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
+        //     if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
+        //         LOGE("Scan stop failed, error status = %x", param->scan_stop_cmpl.status);
+        //         break;
+        //     }
+        //     LOGI("Stop scan Successful");
+        //     break;
 
         default:
             break;
@@ -218,66 +218,19 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             LOGI("REMOTE BDA:");
             LOGI_HEX(gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].remote_bda, sizeof(esp_bd_addr_t));
 
-            esp_err_t mtu_ret = esp_ble_gattc_send_mtu_req(gattc_if, p_data->connect.conn_id);
-            if (mtu_ret) {
-                LOGE("MTU request error. Error code = %x", mtu_ret);
-            }
+            // esp_err_t mtu_ret = esp_ble_gattc_send_mtu_req(gattc_if, p_data->connect.conn_id);
+            // if (mtu_ret) {
+            //     LOGE("MTU request error. Error code = %x", mtu_ret);
+            // }
             break;
         }
 
-        case ESP_GATTC_CFG_MTU_EVT:
-            if (param->cfg_mtu.status != ESP_GATT_OK) {
-                LOGE("Config mtu request failed, error status = %x", param->cfg_mtu.status);
-                break;
-            }
-            LOGI("ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
-            break;
-
-        // case ESP_GATTC_DIS_SRVC_CMPL_EVT:
-        //     if (param->dis_srvc_cmpl.status != ESP_GATT_OK) {
-        //         LOGE("Discover service failed, status %d", param->dis_srvc_cmpl.status);
+        // case ESP_GATTC_CFG_MTU_EVT:
+        //     if (param->cfg_mtu.status != ESP_GATT_OK) {
+        //         LOGE("Config mtu request failed, error status = %x", param->cfg_mtu.status);
         //         break;
         //     }
-
-        //     LOGI("Discover service complete conn_id %d", param->dis_srvc_cmpl.conn_id);
-        //     esp_ble_gattc_search_service(gattc_if, param->cfg_mtu.conn_id, &remote_filter_service_uuid);
-        //     break;
-
-        // case ESP_GATTC_SEARCH_RES_EVT: {
-        //     LOGI("SEARCH RES: conn_id = %x is primary service %d", p_data->search_res.conn_id, p_data->search_res.is_primary);
-        //     LOGI("Start handle %d end handle %d current handle value %d", p_data->search_res.start_handle, p_data->search_res.end_handle, p_data->search_res.srvc_id.inst_id);
-
-        //     if (p_data->search_res.srvc_id.uuid.len == ESP_UUID_LEN_16 &&
-        //         p_data->search_res.srvc_id.uuid.uuid.uuid16 == REMOTE_SERVICE_UUID) {
-        //             LOGI("SERVICE FOUND");
-        //             get_server = true;
-        //             gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].service_start_handle = p_data->search_res.start_handle;
-        //             gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].service_end_handle = p_data->search_res.end_handle;
-        //             LOGI("UUID16: %x", p_data->search_res.srvc_id.uuid.uuid.uuid16);
-        //         }
-        //         break;
-        // }
-
-        // // TODO: Complete
-        // case ESP_GATTC_SEARCH_CMPL_EVT:
-        //     if (p_data->search_cmpl.status != ESP_GATT_OK) {
-        //         LOGE("Search service failed, error status = %x", p_data->search_cmpl.status);
-        //         break;
-        //     }
-
-        //     if (p_data->search_cmpl.searched_service_source == ESP_GATT_SERVICE_FROM_REMOTE_DEVICE) {
-        //         LOGI("Get service information from remote device");
-        //     } else if (p_data->search_cmpl.searched_service_source == ESP_GATT_SERVICE_FROM_NVS_FLASH) {
-        //         LOGI("Get service information from flash");
-        //     } else {
-        //         LOGI("Unknown service source");
-        //     }
-        //     LOGI("ESP_GATTC_SEARCH_CMPL_EVT");
-
-        //     // if (get_server) {
-
-        //     // }
-
+        //     LOGI("ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
         //     break;
 
         case ESP_GATTC_DISCONNECT_EVT:
