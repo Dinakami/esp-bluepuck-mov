@@ -142,6 +142,9 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 }
 
                 case ESP_GAP_SEARCH_INQ_CMPL_EVT:
+                    LOGI("Restarting Scan");
+                    uint32_t duration = 30;     // in seconds
+                    esp_ble_gap_start_scanning(duration);
                     break;
 
                 default:
