@@ -16,16 +16,15 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
 static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 
-#define CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP true
+#define CONFIG_EXAMPLE_DUMP_BDA_AND_ADV_NAME        false
+#define CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP  false
 
-#define NUM_OF_PROFILES 1
-#define BLUEPUCK_MOV_PROFILE_ID 0
+#define NUM_OF_PROFILES             1
+#define BLUEPUCK_MOV_PROFILE_ID     0
+#define SCAN_DURATION (uint32_t)    120 // in seconds
 
-#define REMOTE_SERVICE_UUID     0x00FF
-
+static const char remote_device_mac[6] = {0xD8, 0x05, 0xA9, 0xC5, 0x7C, 0x4F};
 static const char remote_device_name[] = "LY BluePuckMov\0";
-static bool connect     = false;
-static bool get_server  = false;
 
 struct gattc_profile_inst {
     esp_gattc_cb_t gattc_cb;
@@ -45,24 +44,12 @@ static struct gattc_profile_inst gl_profile_tab[NUM_OF_PROFILES] = {
     }
 };
 
-// static esp_ble_scan_params_t ble_scan_params = {
-//     .scan_type          = BLE_SCAN_TYPE_ACTIVE,
-//     .own_addr_type      = BLE_ADDR_TYPE_PUBLIC,
-//     .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL,
-//     .scan_interval      = 0x50,
-//     .scan_window        = 0x30,
-//     .scan_duplicate     = BLE_SCAN_DUPLICATE_DISABLE
-// };
 static esp_ble_scan_params_t ble_scan_params = {
     .scan_type          = BLE_SCAN_TYPE_PASSIVE,
     .own_addr_type      = BLE_ADDR_TYPE_PUBLIC,
-    .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL,
+    .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL, // TODO: filter for remote device (mac)
     .scan_interval      = 0x10, // TODO: Should scan continiously
     .scan_window        = 0x10, // 10ms
     .scan_duplicate     = BLE_SCAN_DUPLICATE_DISABLE
 };
 
-static esp_bt_uuid_t remote_filter_service_uuid = {
-    .len = ESP_UUID_LEN_16,
-    .uuid = {.uuid16 = REMOTE_SERVICE_UUID}
-};

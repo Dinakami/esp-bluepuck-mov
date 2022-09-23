@@ -18,7 +18,8 @@ void app_main(void)
     LOGI("Compile Time:      %s", app_desc->time);
     LOGI("Compile Date:      %s", app_desc->date);
 
-    bluepuck_mov_init();
+    bluepuck_init();
+    xTaskCreatePinnedToCore(&bluepuck_adv_handler, "Bluepuck advertisement handler", 2048, NULL, 5, NULL, 1);
 }
 
 const char* last_reset_reason_str()

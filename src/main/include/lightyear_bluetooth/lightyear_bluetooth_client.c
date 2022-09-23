@@ -1,4 +1,6 @@
-#include "lightyear_bluetooth_client.h"
+#include "lightyear_bluetooth_shared.h"
+
+uint8_t bluepuck_adv[31] = {};
 
 void lightyear_bluetooth_init()
 {
@@ -73,8 +75,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
 
     switch (event) {
         case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT: {
-            uint32_t duration = 30;     // in seconds
-            esp_ble_gap_start_scanning(duration);
+            esp_ble_gap_start_scanning(SCAN_DURATION);
             break;
         }
 
@@ -93,11 +94,11 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             
             switch (scan_result->scan_rst.search_evt) {
                 case ESP_GAP_SEARCH_INQ_RES_EVT: {
-                    uint8_t mac[6] = {0xD8, 0x05, 0xA9, 0xC5, 0x7C, 0x4F};
-                    if (memcmp(mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
+                    if (memcmp(remote_device_mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
                         break;
                     }
 
+#if CONFIG_EXAMPLE_DUMP_BDA_AND_ADV_NAME
                     LOGI_HEX(scan_result->scan_rst.bda, 6);
                     LOGI("Searched Adv Data Len %d, Scan Response Length %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
 
@@ -106,45 +107,28 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                     if (adv_name != NULL) {
                         LOGI_HEX(adv_name, adv_name_len);
                         LOGI("Name: %.*s", adv_name_len, adv_name);
-                    }
-                    
-#if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
-                    if (scan_result->scan_rst.adv_data_len > 0) {
-                        LOGI("adv data:");
-                        LOGI_HEX(&scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
-                    }
-                    if (scan_result->scan_rst.scan_rsp_len > 0) {
-                        LOGI("scan resp:");
-                        LOGI_HEX(&scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
-                    }
+                    }                    
+    #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
+                        if (scan_result->scan_rst.adv_data_len > 0) {
+                            LOGI("adv data:");
+                            LOGI_HEX(&scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
+                        }
+                        if (scan_result->scan_rst.scan_rsp_len > 0) {
+                            LOGI("scan resp:");
+                            LOGI_HEX(&scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
+                        }
+    #endif
+                        LOGI("\n");
 #endif
-                    LOGI("\n");
-
-                    // Connect to remote device if name
-                    // if (adv_name != NULL) {
-                    //     if (strlen(remote_device_name) == adv_name_len &&
-                    //         strncmp((char *) adv_name, remote_device_name, adv_name_len) == 0) {
-                    //         LOGI("Searched device %s\n", remote_device_name);
-
-                    //         if (connect == false) {
-                    //             connect = true;
-                    //             LOGI("Connected to the remote device.");
-
-                    //             esp_ble_gap_stop_scanning();
-                    //             esp_ble_gattc_open(
-                    //                 gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].gattc_if, scan_result->scan_rst.bda,
-                    //                 scan_result->scan_rst.ble_addr_type, true
-                    //             );
-                    //         }
-                    //     }               
-                    // }
+                    
+                    // copy last reveived adv packet
+                    memcpy(bluepuck_adv, &scan_result->scan_rst.ble_adv[0], 31);
                     break;
                 }
 
                 case ESP_GAP_SEARCH_INQ_CMPL_EVT:
-                    LOGI("Restarting Scan");
-                    uint32_t duration = 30;     // in seconds
-                    esp_ble_gap_start_scanning(duration);
+                    LOGI("Scan complete. Restarting Scan");
+                    esp_ble_gap_start_scanning(SCAN_DURATION);
                     break;
 
                 default:
@@ -152,14 +136,6 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             }
             break;
         }
-
-        // case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
-        //     if (param->scan_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-        //         LOGE("Scan stop failed, error status = %x", param->scan_stop_cmpl.status);
-        //         break;
-        //     }
-        //     LOGI("Stop scan Successful");
-        //     break;
 
         default:
             break;
@@ -204,42 +180,6 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             if (scan_ret) {
                 LOGE("Setting scan params failed. Err code: %x", scan_ret);
             }
-            break;
-
-        case ESP_GATTC_OPEN_EVT:
-            if (param->open.status != ESP_GATT_OK) {
-                LOGE("Gattc open conn failed, status %d", p_data->open.status);
-                break;
-            }
-            LOGI("Open success");
-            break;
-
-        case ESP_GATTC_CONNECT_EVT: {
-            LOGI("ESP_GATTC_CONNECT_EVT. conn_id %d, gattc_if %d", p_data->connect.conn_id, gattc_if);
-            gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].conn_id = p_data->connect.conn_id;
-            memcpy(gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].remote_bda, p_data->connect.remote_bda, sizeof(esp_bd_addr_t));
-            LOGI("REMOTE BDA:");
-            LOGI_HEX(gl_profile_tab[BLUEPUCK_MOV_PROFILE_ID].remote_bda, sizeof(esp_bd_addr_t));
-
-            // esp_err_t mtu_ret = esp_ble_gattc_send_mtu_req(gattc_if, p_data->connect.conn_id);
-            // if (mtu_ret) {
-            //     LOGE("MTU request error. Error code = %x", mtu_ret);
-            // }
-            break;
-        }
-
-        // case ESP_GATTC_CFG_MTU_EVT:
-        //     if (param->cfg_mtu.status != ESP_GATT_OK) {
-        //         LOGE("Config mtu request failed, error status = %x", param->cfg_mtu.status);
-        //         break;
-        //     }
-        //     LOGI("ESP_GATTC_CFG_MTU_EVT, Status %d, MTU %d, conn_id %d", param->cfg_mtu.status, param->cfg_mtu.mtu, param->cfg_mtu.conn_id);
-        //     break;
-
-        case ESP_GATTC_DISCONNECT_EVT:
-            connect = false;
-            get_server = false;
-            LOGI("ESP_GATTC_DISCONNECT_EVT, reason = %d", p_data->disconnect.reason);
             break;
 
         default:
