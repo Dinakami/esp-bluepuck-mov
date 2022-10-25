@@ -27,17 +27,19 @@ void mov_adv_handler() {
         LOGI("Alert status service:");
         LOGI_HEX(alert_status_service, 2);
 
-        // TODO: Confirm that the eldians are correct
+        // Move data from adv packet
         uint8_t raw_mov_data[2] = {bluepuck_adv[7], bluepuck_adv[8]}; // little eldian
         uint16_t *mov_data = (uint16_t*) raw_mov_data; // big eldian
 
+        // Number of motions
         bluepuck_mov_num_motions = *mov_data >> 1;
+        // Instantenuous motion
         // bluepuck_mov_in_motion = (*mov_data << 15) == (1 << 0) ? true : false;
 
         LOGI("MOV Data: %x, %d", *mov_data, *mov_data);
-        // if (bluepuck_mov_in_motion) {
-        //     LOGI("MOV in motion");
-        // }
+        if (bluepuck_mov_in_motion) {
+            LOGI("MOV in motion");
+        }
         LOGI("Number of motions = %d, 0x%x \n", bluepuck_mov_num_motions, bluepuck_mov_num_motions);
     }
 }

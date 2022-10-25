@@ -108,7 +108,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                         LOGI_HEX(adv_name, adv_name_len);
                         LOGI("Name: %.*s", adv_name_len, adv_name);
                     }                    
-    #if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
+#if CONFIG_EXAMPLE_DUMP_ADV_DATA_AND_SCAN_RESP
                         if (scan_result->scan_rst.adv_data_len > 0) {
                             LOGI("adv data:");
                             LOGI_HEX(&scan_result->scan_rst.ble_adv[0], scan_result->scan_rst.adv_data_len);
@@ -117,7 +117,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                             LOGI("scan resp:");
                             LOGI_HEX(&scan_result->scan_rst.ble_adv[scan_result->scan_rst.adv_data_len], scan_result->scan_rst.scan_rsp_len);
                         }
-    #endif
+#endif
                         LOGI("\n");
 #endif
                     

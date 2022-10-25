@@ -1,0 +1,1 @@
+USB NFC reader (ACS122u)
