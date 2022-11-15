@@ -23,8 +23,9 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
 #define BLUEPUCK_MOV_PROFILE_ID     0
 #define SCAN_DURATION (uint32_t)    120 // in seconds
 
-static const char remote_device_mac[6] = {0xD8, 0x05, 0xA9, 0xC5, 0x7C, 0x4F};
-static const char remote_device_name[] = "LY BluePuckMov\0";
+static const char remote_mov_v4_mac[6] = {0xD8, 0x05, 0xA9, 0xC5, 0x7C, 0x4F};
+static const char remote_mov_v3_mac[6] = {0xD3, 0xE2, 0x14, 0x91, 0x77, 0xF1};
+// static const char remote_device_name[] = "LY BluePuckMov\0";
 
 struct gattc_profile_inst {
     esp_gattc_cb_t gattc_cb;

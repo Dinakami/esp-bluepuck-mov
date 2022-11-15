@@ -80,7 +80,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
         }
 
         case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT:
-            // indicaate if scan start was successful or failed
+            // indicate if scan start was successful or failed
             if (param->scan_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
                 LOGE("Scan start failed, error status = %x", param->scan_start_cmpl.status);
                 break;
@@ -94,11 +94,11 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             
             switch (scan_result->scan_rst.search_evt) {
                 case ESP_GAP_SEARCH_INQ_RES_EVT: {
-                    if (memcmp(remote_device_mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
+                    if (memcmp(remote_mov_v3_mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
                         break;
                     }
 
-#if CONFIG_EXAMPLE_DUMP_BDA_AND_ADV_NAME
+#if CONFIG_EXAMPLE_DUMP_BDA_AND_ADV_NAME == true
                     LOGI_HEX(scan_result->scan_rst.bda, 6);
                     LOGI("Searched Adv Data Len %d, Scan Response Length %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
 
@@ -121,7 +121,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                         LOGI("\n");
 #endif
                     
-                    // copy last reveived adv packet
+                    // copy last revceived adv packet
                     memcpy(bluepuck_adv, &scan_result->scan_rst.ble_adv[0], 31);
                     break;
                 }

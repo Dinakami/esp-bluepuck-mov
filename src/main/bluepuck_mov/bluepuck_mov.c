@@ -21,7 +21,7 @@ void bluepuck_adv_handler(void * pvParameters)
 }
 
 void mov_adv_handler() {
-    uint8_t alert_status_service[2] = {bluepuck_adv[6], bluepuck_adv[5]}; // big eldian
+    uint8_t alert_status_service[2] = {bluepuck_adv[6], bluepuck_adv[5]}; // ``big eldian
 
     if (memcmp(alert_status_service, bluepuck_mov_alert_status_service, 2) == 0) {
         LOGI("Alert status service:");
@@ -36,10 +36,10 @@ void mov_adv_handler() {
         // Instantenuous motion
         // bluepuck_mov_in_motion = (*mov_data << 15) == (1 << 0) ? true : false;
 
-        LOGI("MOV Data: %x, %d", *mov_data, *mov_data);
-        if (bluepuck_mov_in_motion) {
-            LOGI("MOV in motion");
-        }
+        LOGI("MOV Data: %x, 0x%d", *mov_data, *mov_data);
+        // if (bluepuck_mov_in_motion) {
+        //     LOGI("MOV in motion");
+        // }
         LOGI("Number of motions = %d, 0x%x \n", bluepuck_mov_num_motions, bluepuck_mov_num_motions);
     }
 }
