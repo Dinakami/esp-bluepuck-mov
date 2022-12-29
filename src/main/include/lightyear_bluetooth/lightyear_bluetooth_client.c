@@ -94,16 +94,16 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             
             switch (scan_result->scan_rst.search_evt) {
                 case ESP_GAP_SEARCH_INQ_RES_EVT: {
-                    if (memcmp(remote_mov_v3_mac, scan_result->scan_rst.bda, 6) != 0) { // TODO: Is this a length comparison?
+                    if (memcmp(remote_mov2_mac, scan_result->scan_rst.bda, 6) != 0) {
                         break;
                     }
 
 #if CONFIG_EXAMPLE_DUMP_BDA_AND_ADV_NAME == true
                     LOGI_HEX(scan_result->scan_rst.bda, 6);
-                    LOGI("Searched Adv Data Len %d, Scan Response Length %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
+                    LOGI("Searched Adv Data Len - %d, Scan Response Len - %d", scan_result->scan_rst.adv_data_len, scan_result->scan_rst.scan_rsp_len);
 
                     adv_name = esp_ble_resolve_adv_data(scan_result->scan_rst.ble_adv, ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
-                    LOGI("Searched Device Name Len %d", adv_name_len);
+                    LOGI("Searched Device Name Len - %d", adv_name_len);
                     if (adv_name != NULL) {
                         LOGI_HEX(adv_name, adv_name_len);
                         LOGI("Name: %.*s", adv_name_len, adv_name);

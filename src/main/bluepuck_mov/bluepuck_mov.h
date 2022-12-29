@@ -5,7 +5,7 @@
 static uint8_t bluepuck_mov_alert_status_service[2] = {0x2A, 0x06};
 
 static bool bluepuck_mov_in_motion = false;
-static uint16_t bluepuck_mov_num_motions = 0;
+static uint16_t num_motions = 0;
 
 // TODO: Try connecting and chechking if adv data changes are still recorderd
 // TODO: Use disconnect event to know when the puck is out of range. Keep scanning even after connect
